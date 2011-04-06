@@ -1,0 +1,10 @@
+include README
+include AUTHORS
+include CHANGES
+include LICENSE
+include TODO
+
+recursive-include pkgtools *
+
+recursive-include docs *
+prune docs/_build
