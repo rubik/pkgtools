@@ -1,8 +1,8 @@
 import xmlrpc.client as xmlrpclib
 
 
-def pypi_client(*args, **kwargs):
-    return xmlrpclib.ServerProxy('http://pypi.python.org/pypi', *args, **kwargs)
+def pypi_client(index_url='http://pypi.python.org/pypi', *args, **kwargs):
+    return xmlrpclib.ServerProxy(index_url, xmlrpclib.Transport(), *args, **kwargs)
 
 
 class _Objectify(object):
