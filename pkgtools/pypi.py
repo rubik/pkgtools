@@ -1,4 +1,4 @@
-import xmlrpclib
+import xmlrpc.client as xmlrpclib
 
 
 def pypi_client(*args, **kwargs):

@@ -3,9 +3,9 @@ import sys
 import glob
 import tarfile
 import zipfile
-import ConfigParser
+import configparser as ConfigParser
 
-from utils import _Objectify, dir_ext
+from .utils import _Objectify, dir_ext
 
 
 class MetadataFileParser(object):
