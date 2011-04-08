@@ -1,17 +1,27 @@
 import os
 
 
-def dir_ext(path):
+def name_ext(path):
     p, e = os.path.splitext(path)
     if p.endswith('.tar'):
         return p[:-4], '.tar' + e
     return p, e
 
-def dir(path):
-    return dir_ext(path)[0]
+def name(path):
+    return name_ext(path)[0]
 
 def ext(path):
-    return dir_ext(path)[1]
+    return name_ext(path)[1]
+
+def zip_files(zf):
+    names = [n for n in zf.namelist() if 'egg-info' in n]
+    fobj_list = [zf.read(n) for n in names]
+    return zip(fobj_list, map(os.path.basename, names))
+
+def tar_files(tf):
+    names = [n for n in tf.getnames() if 'egg-info' in n and not n.endswith('egg-info')]
+    fobj_list = [tf.extractfile(n).read() for n in names]
+    return zip(fobj_list, map(os.path.basename, names))
 
 
 class _Objectify(object):
