@@ -3,19 +3,13 @@ import sys
 import glob
 import tarfile
 import zipfile
-<<<<<<< HEAD
 import configparser as ConfigParser
-=======
->>>>>>> master
 import warnings
 import io as StringIO
 
-<<<<<<< HEAD
 from .utils import ext, tar_files, zip_files
-=======
 from utils import ext, tar_files, zip_files
 import ConfigParser
->>>>>>> master
 
 
 class MetadataFileParser(object):
