@@ -13,8 +13,10 @@ def name(path):
 def ext(path):
     return name_ext(path)[1]
 
-def zip_files(zf):
-    names = [n for n in zf.namelist() if 'egg-info' in n]
+## The search parameter is for Egg files, since they have a different structure
+
+def zip_files(zf, search='egg-info'):
+    names = [n for n in zf.namelist() if search in n]
     fobj_list = [zf.read(n) for n in names]
     return zip(fobj_list, map(os.path.basename, names))
 
