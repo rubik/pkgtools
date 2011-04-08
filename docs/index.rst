@@ -62,3 +62,8 @@ Hello World!
     '1.0'
     >>> i.file('PKG-INFO')['Name']
     'Sphinx'
+
+.. toctree::
+
+   pkg.rst
+   pypi.rst
