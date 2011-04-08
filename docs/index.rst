@@ -12,6 +12,11 @@ pkgtools is a Python library that offers some tools to work with Python Packages
     * :mod:`pkgtools.pkg`: some package utilities, like metadata reading
 
 
+.. toctree::
+
+   pkg.rst
+   pypi.rst
+
 Hello World!
 ------------
 
@@ -62,8 +67,3 @@ Hello World!
     '1.0'
     >>> i.file('PKG-INFO')['Name']
     'Sphinx'
-
-.. toctree::
-
-   pkg.rst
-   pypi.rst
