@@ -1,27 +1,8 @@
-import xmlrpc.client as xmlrpclib
-
+import xmlrpclib
+from utils import _Objectify
 
 def pypi_client(index_url='http://pypi.python.org/pypi', *args, **kwargs):
     return xmlrpclib.ServerProxy(index_url, xmlrpclib.Transport(), *args, **kwargs)
-
-
-class _Objectify(object):
-    def __init__(self, entries):
-        self.__dict__.update(**entries)
-
-    def _valid(self, item):
-        return not item.startswith('_') or item in ('_pypi_hidden', '_pypi_ordering')
-
-    def _clean_dict(self):
-        return dict((k, v) for k, v in self.__dict__.iteritems() if self._valid(k))
-
-    def __repr__(self):
-        return 'Object({0})'.format(self._clean_dict())
-
-    def __getitem__(self, item):
-        if not self._valid(item):
-            raise KeyError(item)
-        return getattr(self, item)
 
 
 class PyPI(object):

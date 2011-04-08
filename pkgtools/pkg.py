@@ -72,13 +72,13 @@ class Dist(object):
     '''
     This is the base class for all other objects. It requires a list of tuples (``(file_data, file_name)``) and provides some methods:
 
+    .. attribute:: has_metadata
+
+        This attribute is True when the distribution has some metadata, False otherwise.
+
     .. automethod:: file
 
     .. automethod:: files
-
-    .. attr:: has_metadata
-
-        Returns True whether it has the metadata, False otherwise.
     '''
 
     ## Used by __repr__ method
@@ -109,7 +109,7 @@ class Dist(object):
 
     def file(self, name):
         '''
-        Returns the content of the specified file. Raises KeyError when the distribution does not have such file.
+        Returns the content of the specified file. Raises :exc:`KeyError` when the distribution does not have such file.
         '''
 
         if name not in self.metadata:
