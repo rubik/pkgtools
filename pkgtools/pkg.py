@@ -3,14 +3,16 @@ import sys
 import glob
 import tarfile
 import zipfile
+import warnings
+import StringIO
 import ConfigParser
 
-from utils import _Objectify, dir_ext
+from utils import ext, tar_files, zip_files
 
 
 class MetadataFileParser(object):
 
-    def __init__(self, path):
+    def __init__(self, data, name):
 
         self.MAP = {
             'PKG-INFO': self.pkg_info,
@@ -21,55 +23,61 @@ class MetadataFileParser(object):
             'installed-files.txt': self.list,
             'entry_points.txt': self.config,
         }
-        self.path = path
+        self.data = data
+        self.name = name
+        if not self.name:
+            raise TypeError('Invalid file name: {0}'.format(self.name))
 
     def parse(self):
-        return self.MAP[os.path.basename(self.path)]()
+        return self.MAP[self.name]()
 
     def pkg_info(self):
         d = {}
-        with open(self.path) as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                if line.startswith(' '):
-                    d['Description'] += line
-                parts = line.split(':')
-                k, v = parts[0], ':'.join(parts[1:])
-                d[k.strip()] = v.strip()
+        for line in self.data.split('\n'):
+            if not line.strip():
+                continue
+            if line.startswith(' '):
+                d['Description'] += line
+            parts = line.split(':')
+            k, v = parts[0], ':'.join(parts[1:])
+            d[k.strip()] = v.strip()
         return d
 
     def list(self):
         d = []
-        with open(self.path) as f:
-            for line in f:
-                d.append(line.strip())
+        for line in self.data.split('\n'):
+            if not line.strip():
+                continue
+            d.append(line.strip())
         return d
 
     def config(self):
         d = {}
-        with open(self.path) as f:
-            p = ConfigParser.ConfigParser()
-            p.readfp(f)
-            for s in p.sections():
-                d[s] = dict(p.items(s))
+        p = ConfigParser.ConfigParser()
+        p.readfp(StringIO.StringIO(self.data))
+        for s in p.sections():
+            d[s] = dict(p.items(s))
         return d
 
 
 class Dist(object):
-    def __init__(self, path):
+    def __init__(self, file_objects):
         self.metadata = {}
-        self.path = path
+        self.file_objects = file_objects
         self.get_metadata()
 
+    def __repr__(self):
+        ## A little trick to get the real name from sub-classes (like Egg or SDist)
+        return '<{0} object at {1}>'.format(self.__class__.__name__, id(self))
+
     def get_metadata(self):
-        for f in os.listdir(self.path):
-            if f == 'not-zip-safe':
+        for data, name in self.file_objects:
+            if name == 'not-zip-safe':
                 self.metadata['zip-safe'] = False
-            if f.endswith('.txt') or f == 'PKG-INFO':
-                path = os.path.join(self.path, f)
-                self.metadata[f] = MetadataFileParser(path).parse()
-        self.metadata = _Objectify(self.metadata)
+            elif name.endswith('.txt') or name == 'PKG-INFO':
+                self.metadata[name] = MetadataFileParser(data, name).parse()
+        ## FIXME: Do we really need _Objectify??
+        #self.metadata = _Objectify(self.metadata)
         return self.metadata
 
     def has_metadata(self):
@@ -80,28 +88,91 @@ class Dist(object):
             raise KeyError('This package does not have {0} file'.format(name))
         return self.metadata[name]
 
+    def files(self):
+        return self.metadata.keys()
+
 
 class Egg(Dist):
-    def __init__(self, egg_path, dest):
+    def __init__(self, egg_path,):
         z = zipfile.ZipFile(egg_path)
-        z.extractall(dest)
-        super(Egg, self).__init__(os.path.join(dest, 'EGG-INFO'))
+        super(Egg, self).__init__(zip_files(z))
 
 
 class SDist(Dist):
-    def __init__(self, sdist_path, dest):
-        d, e = dir_ext(sdist_path)
+    def __init__(self, sdist_path):
+        e = ext(sdist_path)
         if e == '.zip':
             arch = zipfile.ZipFile(sdist_path)
+            func = zip_files
         elif e.startswith('.tar'):
             mode = 'r' if e == '.tar' else 'r:' + e.split('.')[2]
             arch = tarfile.open(sdist_path, mode=mode)
-        arch.extractall(dest)
-        path = os.path.join(dest, d, d.split('-')[0] + '.egg-info')
-        super(SDist, self).__init__(path)
+            func = tar_files
+        super(SDist, self).__init__(func(arch))
 
 
-class Installed(Dist):
+class Dir(Dist):
+    '''
+    Given a path containing the metadata files, returns a Dist object::
+
+        >>> p = Dir('/usr/local/lib/python2.7/dist-packages/pypol_-0.5-py2.7.egg/EGG-INFO')
+        >>> p
+        <Dir object at 150234636>
+        >>> p.files()
+        ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
+        >>> p.file('PKG-INFO')
+        {'Author': 'Michele Lacchia',
+         'Author-email': 'michelelacchia@gmail.com',
+         'Classifier': 'Programming Language :: Python :: 2.7',
+         'Description': 'UNKNOWN',
+         'Download-URL': 'http://github.com/rubik/pypol/downloads/',
+         'Home-page': 'http://pypol.altervista.org/',
+         'License': 'GNU GPL v3',
+         'Metadata-Version': '1.0',
+         'Name': 'pypol-',
+         'Platform': 'any',
+         'Summary': 'Python polynomial library',
+         'Version': '0.5'}
+    '''
+
+    def __init__(self, path):
+        files = []
+        for f in os.listdir(path):
+            with open(os.path.join(path, f)) as fobj:
+                data = fobj.read()
+            files.append((data, f))
+        super(Dir, self).__init__(files)
+
+
+class Develop(Dir):
+    def __init__(self, package):
+        if isinstance(package, str):
+            try:
+                package = __import__(package)
+            except ImportError:
+                raise ValueError('cannot import {0}'.format(package))
+        package_name = package.__package__
+        if package_name is None:
+            package_name = package.__name__
+        d = os.path.dirname(package.__file__)
+        egg_info = package_name + '.egg-info'
+        paths = [os.path.join(d, egg_info), os.path.join(d, '..', egg_info)]
+        for p in paths:
+            if os.path.exists(p):
+                path = p
+                break
+        else:
+            raise ValueError('cannot find metadata for {0}'.format(package_name))
+        super(Develop, self).__init__(path)
+
+
+class Installed(Dir):
+    '''
+    This class accept either a string or a module object and returns a Dist object::
+
+        
+    '''
+
     def __init__(self, package):
         if isinstance(package, str):
             try:
