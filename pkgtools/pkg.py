@@ -8,6 +8,7 @@ import StringIO
 import ConfigParser
 
 from utils import ext, tar_files, zip_files
+import ConfigParser
 
 
 class MetadataFileParser(object):
@@ -61,6 +62,21 @@ class MetadataFileParser(object):
 
 
 class Dist(object):
+    '''
+    This is the base class for all other objects. It requires a list of tuples (``(file_data, file_name)``) and provides some methods:
+
+    .. automethod:: file
+
+    .. automethod:: files
+
+    .. attr:: has_metadata
+
+        Returns True whether it has the metadata, False otherwise.
+    '''
+
+    ## Used by __repr__ method
+    _arg_name = None
+
     def __init__(self, file_objects):
         self.metadata = {}
         self.file_objects = file_objects
@@ -68,7 +84,11 @@ class Dist(object):
 
     def __repr__(self):
         ## A little trick to get the real name from sub-classes (like Egg or SDist)
-        return '<{0} object at {1}>'.format(self.__class__.__name__, id(self))
+        return '<{0}[{1}] object at {2}>'.format(self.__class__.__name__, self._arg_name, id(self))
+
+    @ property
+    def has_metadata(self):
+        return bool(self.metadata)
 
     def get_metadata(self):
         for data, name in self.file_objects:
@@ -80,25 +100,59 @@ class Dist(object):
         #self.metadata = _Objectify(self.metadata)
         return self.metadata
 
-    def has_metadata(self):
-        return bool(self.metadata)
-
     def file(self, name):
+        '''
+        Returns the content of the specified file. Raises KeyError when the distribution does not have such file.
+        '''
+
         if name not in self.metadata:
             raise KeyError('This package does not have {0} file'.format(name))
         return self.metadata[name]
 
     def files(self):
+        '''
+        Returns the files parsed by this distribution.
+        '''
+
         return self.metadata.keys()
 
 
 class Egg(Dist):
-    def __init__(self, egg_path,):
+    '''
+    Given the egg path, returns a Dist object::
+
+        >>> e = Egg('pyg-0.1.2-py2.7.egg')
+        >>> e
+        <Egg[pyg-0.1.2-py2.7.egg] object at 172517100>
+        >>> e.files()
+        ['requires.txt', 'PKG-INFO', 'SOURCES.txt', 'top_level.txt', 'dependency_links.txt', 'entry_points.txt']
+        >>> e.file('requires.txt')
+        ['setuptools']
+        >>> e.file('entry_points.txt')
+        {'console_scripts': {'pyg': 'pyg:main'}}
+    '''
+
+    def __init__(self, egg_path):
         z = zipfile.ZipFile(egg_path)
-        super(Egg, self).__init__(zip_files(z))
+        self._arg_name = egg_path
+        super(Egg, self).__init__(zip_files(z, 'EGG-INFO'))
 
 
 class SDist(Dist):
+    '''
+    Given the source distribution path, returns a Dist object::
+
+        >>> s = SDist('pyg-0.1.2.zip')
+        >>> s
+        <SDist[pyg-0.1.2.zip] object at 159709868>
+        >>> s.files()
+        ['requires.txt', 'PKG-INFO', 'SOURCES.txt', 'top_level.txt', 'dependency_links.txt', 'entry_points.txt']
+        >>> s.file('requires.txt')
+        ['setuptools', 'pkgtools']
+        >>> s.file('entry_points.txt')
+        {'console_scripts': {'pyg': 'pyg:main'}}
+    '''
+
     def __init__(self, sdist_path):
         e = ext(sdist_path)
         if e == '.zip':
@@ -108,6 +162,7 @@ class SDist(Dist):
             mode = 'r' if e == '.tar' else 'r:' + e.split('.')[2]
             arch = tarfile.open(sdist_path, mode=mode)
             func = tar_files
+        self._arg_name = sdist_path
         super(SDist, self).__init__(func(arch))
 
 
@@ -141,10 +196,29 @@ class Dir(Dist):
             with open(os.path.join(path, f)) as fobj:
                 data = fobj.read()
             files.append((data, f))
+        self._arg_name = path
         super(Dir, self).__init__(files)
 
 
 class Develop(Dir):
+    '''
+    This class accepts either a string or a module object. Returns a Dist object::
+
+        >>> d = Develop('pkgtools')
+        >>> d
+        <Develop[pkgtools] object at 158833324>
+        >>> d.files()
+        ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
+        >>> d.file('SOURCES.txt')
+        ['AUTHORS', 'CHANGES', 'LICENSE', 'MANIFEST.in', 'README', 'TODO', 'setup.py',
+        'docs/Makefile', 'docs/conf.py', 'docs/index.rst', 'docs/make.bat', 'docs/pkg.rst',
+        'docs/pypi.rst', 'docs/_themes/pyg/theme.conf', 'docs/_themes/pyg/static/pyg.css_t',
+        'pkgtools/__init__.py', 'pkgtools/__init__.pyc', 'pkgtools/pkg.py', 'pkgtools/pkg.pyc',
+        'pkgtools/pypi.py', 'pkgtools/pypi.pyc', 'pkgtools/utils.py', 'pkgtools/utils.pyc',
+        'pkgtools.egg-info/PKG-INFO', 'pkgtools.egg-info/SOURCES.txt',
+        'pkgtools.egg-info/dependency_links.txt', 'pkgtools.egg-info/top_level.txt']
+    '''
+
     def __init__(self, package):
         if isinstance(package, str):
             try:
@@ -163,14 +237,21 @@ class Develop(Dir):
                 break
         else:
             raise ValueError('cannot find metadata for {0}'.format(package_name))
+        self._arg_name = package_name
         super(Develop, self).__init__(path)
 
 
 class Installed(Dir):
     '''
-    This class accept either a string or a module object and returns a Dist object::
+    This class accepts either a string or a module object and returns a Dist object::
 
-        
+        >>> i = Installed('argh')
+        >>> i
+        <Installed[argh] object at 158358348>
+        >>> i.files()
+        ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
+        >>> i.file('top_level.txt')
+        ['argh']
     '''
 
     def __init__(self, package):
@@ -197,4 +278,5 @@ class Installed(Dir):
                 break
         else:
             raise ValueError('cannot find PKG-INFO for {0}'.format(package_name))
+        self._arg_name = package_name
         super(Installed, self).__init__(path)
