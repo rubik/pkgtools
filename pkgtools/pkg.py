@@ -134,7 +134,7 @@ class Egg(Dist):
 
     def __init__(self, egg_path):
         z = zipfile.ZipFile(egg_path)
-        self._arg_name = egg_path
+        self._arg_name = os.path.normpath(egg_path)
         super(Egg, self).__init__(zip_files(z, 'EGG-INFO'))
 
 
@@ -162,7 +162,7 @@ class SDist(Dist):
             mode = 'r' if e == '.tar' else 'r:' + e.split('.')[2]
             arch = tarfile.open(sdist_path, mode=mode)
             func = tar_files
-        self._arg_name = sdist_path
+        self._arg_name = os.path.normpath(sdist_path)
         super(SDist, self).__init__(func(arch))
 
 
@@ -196,7 +196,7 @@ class Dir(Dist):
             with open(os.path.join(path, f)) as fobj:
                 data = fobj.read()
             files.append((data, f))
-        self._arg_name = path
+        self._arg_name = os.path.normpath(path)
         super(Dir, self).__init__(files)
 
 
@@ -217,6 +217,12 @@ class Develop(Dir):
         'pkgtools/pypi.py', 'pkgtools/pypi.pyc', 'pkgtools/utils.py', 'pkgtools/utils.pyc',
         'pkgtools.egg-info/PKG-INFO', 'pkgtools.egg-info/SOURCES.txt',
         'pkgtools.egg-info/dependency_links.txt', 'pkgtools.egg-info/top_level.txt']
+        >>> import pyg
+        >>> d = Develop(pyg)
+        >>> d
+        <Develop[/home/3jkldfi84r2hj/pyg/pyg.egg-info] object at 175354540>
+        >>> d.files()
+        ['requires.txt', 'PKG-INFO', 'SOURCES.txt', 'top_level.txt', 'dependency_links.txt', 'entry_points.txt']
     '''
 
     def __init__(self, package):
@@ -252,6 +258,12 @@ class Installed(Dir):
         ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
         >>> i.file('top_level.txt')
         ['argh']
+        >>> import argh
+        >>> i = Installed(argh)
+        >>> i
+        <Installed[/usr/local/lib/python2.7/dist-packages/argh-0.14.0-py2.7.egg-info] object at 175527500>
+        >>> i.files()
+        ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
     '''
 
     def __init__(self, package):
