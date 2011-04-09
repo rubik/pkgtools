@@ -116,6 +116,20 @@ class Dist(object):
 
         return self.metadata.keys()
 
+    def entry_points_map(self, group):
+        try:
+            return self.file('entry_points.txt')[group]
+        except KeyError:
+            return {}
+
+    def as_req(self):
+        '''
+        Returns a string that 
+        '''
+
+        pkg_info = self.file('PKG-INFO')
+        return '{0}=={1}'.format(pkg_info['Name'], pkg_info['Version'])
+
 
 class Egg(Dist):
     '''
