@@ -64,7 +64,7 @@ Hello World!
 setup(
     name='pkgtools',
     version=pkgtools.__version__,
-    author='Michele Lacchia',
+    author='Michele Lacchia & Alex Marcat',
     author_email='<michelelacchia@gmail.com',
     license='MIT',
     url='http://',
