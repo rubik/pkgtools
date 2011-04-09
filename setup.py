@@ -67,7 +67,7 @@ setup(
     author='Michele Lacchia & Alex Marcat',
     author_email='<michelelacchia@gmail.com',
     license='MIT',
-    url='http://',
+    url='http://pkgtools.readthedocs.org/',
     download_url='http://pypi.python.org/pypi/pkgtools',
     description='Python Packages Tools',
     long_description=long_desc,
