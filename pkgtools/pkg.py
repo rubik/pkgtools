@@ -73,6 +73,10 @@ class Dist(object):
     .. automethod:: file
 
     .. automethod:: files
+
+    .. automethod:: entry_points_map
+
+    .. automethod:: as_req
     '''
 
     ## Used by __repr__ method
@@ -81,7 +85,7 @@ class Dist(object):
     def __init__(self, file_objects):
         self.metadata = {}
         self.file_objects = file_objects
-        self.get_metadata()
+        self._get_metadata()
 
     def __repr__(self):
         ## A little trick to get the real name from sub-classes (like Egg or SDist)
@@ -91,7 +95,7 @@ class Dist(object):
     def has_metadata(self):
         return bool(self.metadata)
 
-    def get_metadata(self):
+    def _get_metadata(self):
         for data, name in self.file_objects:
             if name == 'not-zip-safe':
                 self.metadata['zip-safe'] = False
@@ -118,6 +122,10 @@ class Dist(object):
         return self.metadata.keys()
 
     def entry_points_map(self, group):
+        '''
+        Returns the elements under the specified section in the :file:`entry_points.txt` file.
+        '''
+
         try:
             return self.file('entry_points.txt')[group]
         except KeyError:
@@ -125,7 +133,7 @@ class Dist(object):
 
     def as_req(self):
         '''
-        Returns a string that 
+        Returns a string that represents the parsed requirement.
         '''
 
         pkg_info = self.file('PKG-INFO')
