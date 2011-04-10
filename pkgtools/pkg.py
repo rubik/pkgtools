@@ -9,7 +9,6 @@ import ConfigParser
 from email.parser import FeedParser
 
 from utils import ext, tar_files, zip_files
-import ConfigParser
 
 
 class MetadataFileParser(object):
