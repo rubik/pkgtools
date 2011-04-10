@@ -3,13 +3,13 @@ import sys
 import glob
 import tarfile
 import zipfile
-import configparser as ConfigParser
 import warnings
 import io as StringIO
+import configparser as ConfigParser
+from email.parser import FeedParser
 
 from .utils import ext, tar_files, zip_files
 from utils import ext, tar_files, zip_files
-import ConfigParser
 
 
 class MetadataFileParser(object):
@@ -35,14 +35,9 @@ class MetadataFileParser(object):
 
     def pkg_info(self):
         d = {}
-        for line in self.data.split('\n'):
-            if not line.strip():
-                continue
-            if line.startswith(' '):
-                d['Description'] += line
-            parts = line.split(':')
-            k, v = parts[0], ':'.join(parts[1:])
-            d[k.strip()] = v.strip()
+        f = FeedParser()
+        f.feed(self.data)
+        d.update(f.close().items())
         return d
 
     def list(self):
