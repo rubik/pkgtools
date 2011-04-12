@@ -162,7 +162,7 @@ class PyPIXmlRpc(object):
             '2.7'
         '''
 
-        return map(_Objectify, self._client.release_urls(package_name, version))
+        return self._client.release_urls(package_name, version)
 
     def release_data(self, package_name, version):
         '''
@@ -217,7 +217,7 @@ class PyPIXmlRpc(object):
             'pkgtools'
         '''
 
-        return _Objectify(self._client.release_data(package_name, version))
+        return self._client.release_data(package_name, version)
 
     def search(self, spec, operator='and'):
         '''
@@ -243,7 +243,7 @@ class PyPIXmlRpc(object):
         Example: ``search({'name': 'foo', 'description': 'bar'}, 'or')``. The results are returned as a list of dicts {'name': package name, 'version': package release version, 'summary': package release summary}
         '''
 
-        return map(_Objectify, self._client.search(spec, operator))
+        return self._client.search(spec, operator)
 
     def changelog(self, since):
         '''
