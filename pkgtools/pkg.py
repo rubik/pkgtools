@@ -1,6 +1,7 @@
 import os
 import sys
 import glob
+import pkgutil
 import tarfile
 import zipfile
 import warnings
@@ -31,7 +32,10 @@ class MetadataFileParser(object):
             raise TypeError('Invalid file name: {0}'.format(self.name))
 
     def parse(self):
-        return self.MAP[self.name]()
+        try:
+            return self.MAP[self.name]()
+        except KeyError:
+            return {}
 
     def pkg_info(self):
         d = {}
@@ -90,12 +94,27 @@ class Dist(object):
     def has_metadata(self):
         return bool(self.metadata)
 
+    @ property
+    def pkg_info(self):
+        return self.file('PKG-INFO')
+
+    @ property
+    def name(self):
+        return self.pkg_info['Name']
+
+    @ property
+    def version(self):
+        return self.pkg_info['Version']
+
     def _get_metadata(self):
         for data, name in self.file_objects:
             if name == 'not-zip-safe':
                 self.metadata['zip-safe'] = False
             elif name.endswith('.txt') or name == 'PKG-INFO':
-                self.metadata[name] = MetadataFileParser(data, name).parse()
+                metadata = MetadataFileParser(data, name).parse()
+                if not metadata:
+                    continue
+                self.metadata[name] = metadata
         ## FIXME: Do we really need _Objectify??
         #self.metadata = _Objectify(self.metadata)
         return self.metadata
@@ -131,8 +150,7 @@ class Dist(object):
         Returns a string that represents the parsed requirement.
         '''
 
-        pkg_info = self.file('PKG-INFO')
-        return '{0}=={1}'.format(pkg_info['Name'], pkg_info['Version'])
+        return '{0}=={1}'.format(self.name, self.version)
 
 
 class Egg(Dist):
@@ -218,6 +236,14 @@ class Dir(Dist):
         super(Dir, self).__init__(files)
 
 
+class EggDir(Dir):
+    def __init__(self, path):
+        path = os.path.join(path, 'EGG-INFO')
+        if not os.path.exists(path):
+            raise ValueError('Path does not exist: {0}'.format(path))
+        super(EggDir, self).__init__(path)
+
+
 class Develop(Dir):
     '''
     This class accepts either a string or a module object. Returns a Dist object::
@@ -288,7 +314,7 @@ class Installed(Dir):
         if isinstance(package, str):
             try:
                 package = __import__(package)
-            except ImportError:
+            except (ImportError, SystemExit):
                 raise ValueError('cannot import {0}'.format(package))
         package_name = package.__package__
         if package_name is None:
@@ -310,3 +336,48 @@ class Installed(Dir):
             raise ValueError('cannot find PKG-INFO for {0}'.format(package_name))
         self._arg_name = package_name
         super(Installed, self).__init__(path)
+
+
+class WorkingSet(object):
+    def __init__(self, entries=None, onerror=None, debug=None):
+        self.packages = {}
+        self.onerror = onerror or (lambda arg: None)
+        self.debug = debug or (lambda arg: None)
+        self._find_packages()
+
+    def _find_packages(self):
+        for loader, package_name, ispkg in pkgutil.walk_packages(onerror=self.onerror):
+            if len(package_name.split('.')) > 1:
+                self.debug('Not a top-level package: {0}'.format(package_name))
+                continue
+            path = loader.find_module(package_name).filename
+            if ext(path) in ('.py', '.pyc', '.so'):
+                self.debug('Not a package: {0}'.format(package_name))
+                continue
+
+            ## We want to keep only packages with metadata-files
+            try:
+                installed = Installed(package_name)
+            except Exception as e:
+                self.debug('Error on retrieving metadata from {0}: {1}'.format(package_name, e))
+                continue
+            self.packages[installed.name] = (path, installed)
+
+    def get(self, package_name, default=None):
+        return self.packages.get(package_name, default)
+
+    def __contains__(self, item):
+        return item in self.packages
+
+    def __iter__(self):
+        for package, data in self.packages.iteritems():
+            yield package, data
+
+    def __bool__(self):
+        return bool(self.packages)
+
+    def __nonzero__(self):
+        return bool(self.packages)
+
+    def __len__(self):
+        return len(self.packages)
