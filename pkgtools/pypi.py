@@ -74,13 +74,13 @@ class PyPIXmlRpc(object):
     .. automethod:: list_packages
 
     .. automethod:: package_releases
-    
+
     .. automethod:: release_urls
-    
+
     .. automethod:: release_data
-    
+
     .. automethod:: search
-    
+
     .. automethod:: changelog
     '''
 

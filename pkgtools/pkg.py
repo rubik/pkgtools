@@ -10,7 +10,6 @@ import configparser as ConfigParser
 from email.parser import FeedParser
 
 from .utils import ext, tar_files, zip_files
-from utils import ext, tar_files, zip_files
 
 
 class MetadataFileParser(object):
@@ -171,7 +170,7 @@ class Egg(Dist):
     def __init__(self, egg_path):
         z = zipfile.ZipFile(egg_path)
         self._arg_name = os.path.normpath(egg_path)
-        super(Egg, self).__init__(zip_files(z, 'EGG-INFO'))
+        super().__init__(zip_files(z, 'EGG-INFO'))
 
 
 class SDist(Dist):
@@ -199,7 +198,7 @@ class SDist(Dist):
             arch = tarfile.open(sdist_path, mode=mode)
             func = tar_files
         self._arg_name = os.path.normpath(sdist_path)
-        super(SDist, self).__init__(func(arch))
+        super().__init__(func(arch))
 
 
 class Dir(Dist):
@@ -233,7 +232,7 @@ class Dir(Dist):
                 data = fobj.read()
             files.append((data, f))
         self._arg_name = os.path.normpath(path)
-        super(Dir, self).__init__(files)
+        super().__init__(files)
 
 
 class EggDir(Dir):
@@ -241,7 +240,7 @@ class EggDir(Dir):
         path = os.path.join(path, 'EGG-INFO')
         if not os.path.exists(path):
             raise ValueError('Path does not exist: {0}'.format(path))
-        super(EggDir, self).__init__(path)
+        super().__init__(path)
 
 
 class Develop(Dir):
@@ -288,7 +287,7 @@ class Develop(Dir):
         else:
             raise ValueError('cannot find metadata for {0}'.format(package_name))
         self._arg_name = package_name
-        super(Develop, self).__init__(path)
+        super().__init__(path)
 
 
 class Installed(Dir):
@@ -335,7 +334,7 @@ class Installed(Dir):
         else:
             raise ValueError('cannot find PKG-INFO for {0}'.format(package_name))
         self._arg_name = package_name
-        super(Installed, self).__init__(path)
+        super().__init__(path)
 
 
 class WorkingSet(object):
