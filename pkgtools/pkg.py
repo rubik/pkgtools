@@ -314,7 +314,10 @@ class Installed(Dir):
             try:
                 package = __import__(package)
             except (ImportError, SystemExit):
-                raise ValueError('cannot import {0}'.format(package))
+                try:
+                    package = __import__(package.lower())
+                except (ImportError, SystemExit):
+                    raise ValueError('cannot import {0}'.format(package))
         package_name = package.__package__
         if package_name is None:
             package_name = package.__name__
