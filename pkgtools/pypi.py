@@ -1,11 +1,10 @@
-import urllib2
-import xmlrpclib
+import xmlrpc.client as xmlrpclib
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from utils import _Objectify
+from .utils import _Objectify
 
 
 def pypi_client(index_url='http://pypi.python.org/pypi', *args, **kwargs):
@@ -75,13 +74,13 @@ class PyPIXmlRpc(object):
     .. automethod:: list_packages
 
     .. automethod:: package_releases
-    
+
     .. automethod:: release_urls
-    
+
     .. automethod:: release_data
-    
+
     .. automethod:: search
-    
+
     .. automethod:: changelog
     '''
 
