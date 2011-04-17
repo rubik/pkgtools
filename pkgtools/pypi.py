@@ -1,10 +1,10 @@
-import xmlrpc.client as xmlrpclib
+import xmlrpclib
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from .utils import _Objectify
+from utils import _Objectify
 
 
 def pypi_client(index_url='http://pypi.python.org/pypi', *args, **kwargs):
