@@ -1,4 +1,5 @@
 import xmlrpclib
+import urllib2
 try:
     import simplejson as json
 except ImportError:
