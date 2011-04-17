@@ -5,11 +5,11 @@ import pkgutil
 import tarfile
 import zipfile
 import warnings
-import io as StringIO
-import configparser as ConfigParser
+import StringIO
+import ConfigParser
 from email.parser import FeedParser
 
-from .utils import ext, tar_files, zip_files
+from utils import ext, tar_files, zip_files
 
 
 class MetadataFileParser(object):
