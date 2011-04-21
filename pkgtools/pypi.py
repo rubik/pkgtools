@@ -273,3 +273,9 @@ class PyPIJson(object):
         pkg_name = package_name or self.package_name
         data = _request(self.URL.format(pkg_name))
         return json.loads(data.read())
+
+    def find(self):
+        data = self.retrieve()
+        version = data['info']['version']
+        for release in data['urls']:
+            yield version, release['filename'], release['md5_digest'], release['url']
