@@ -255,9 +255,9 @@ class PyPIXmlRpc(object):
 
 class PyPIJson(object):
 
-    URL = 'http://pypi.python.org/pypi/{0}/json'
+    URL = 'http://pypi.python.org/pypi/{0}{1}/json'
 
-    def __init__(self, package_name, fast=False):
+    def __init__(self, package_name, version=None, fast=False):
         self.package_name = package_name
 
         # If we don't want to be really fast, we can check if the package name
@@ -266,12 +266,18 @@ class PyPIJson(object):
         if not fast:
             self.package_name = real_name(package_name)
 
+        ## Not the simplest way in the world, but it works
+        if version is None:
+            self.version = ''
+        else:
+            self.version = '/{0}'.format(version)
+
     def __repr__(self):
         return '<PyPIJson[{0}] object at {1}>'.format(self.package_name, id(self))
 
     def retrieve(self, package_name=None):
         pkg_name = package_name or self.package_name
-        data = _request(self.URL.format(pkg_name))
+        data = _request(self.URL.format(pkg_name, self.version))
         return json.loads(data.read())
 
     def find(self):
