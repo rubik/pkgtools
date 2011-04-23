@@ -46,9 +46,10 @@ class MetadataFileParser(object):
     def list(self):
         d = []
         for line in self.data.split('\n'):
-            if not line.strip():
+            line = line.strip()
+            if not line or (line.startswith('[') and line.endswith(']')):
                 continue
-            d.append(line.strip())
+            d.append(line)
         return d
 
     def config(self):
