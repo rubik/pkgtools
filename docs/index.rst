@@ -25,10 +25,10 @@ Hello World!
     ['0.5', '0.4', '0.3', '0.2']
     >>> pypol_egg = pypi.release_urls('pypol_', '0.5')[2]
     >>> pypol_egg
-    Object({'has_sig': False, 'upload_time': <DateTime '20110213T09:33:07' at 97d666c>, 'comment_text': '',
+    {'has_sig': False, 'upload_time': <DateTime '20110213T09:33:07' at 97d666c>, 'comment_text': '',
     'python_version': '2.6', 'url': 'http://pypi.python.org/packages/2.6/p/pypol_/pypol_-0.5-py2.6.egg',
     'md5_digest': '20e660cef8513f35fdb0afd5390146bc', 'downloads': 46, 'filename': 'pypol_-0.5-py2.6.egg',
-    'packagetype': 'bdist_egg', 'size': 116826})
+    'packagetype': 'bdist_egg', 'size': 116826}
     >>> pypol_egg['python_version']
     '2.6'
     >>> pypol_egg.python_version
@@ -65,22 +65,34 @@ Hello World!
     >>> from pkgtools.pkg import Installed
     >>> i = Installed('sphinx')
     >>> i
-    <pkgtools.pkg.Installed object at 0x96f68ec>
+    <Installed[/usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7.egg-info] object at 176896748>
     >>> i.file('entry_points.txt')
-    {'console_scripts': {'sphinx-autogen': 'sphinx.ext.autosummary.generate:main',
-                         'sphinx-build': 'sphinx:main',
-                         'sphinx-quickstart': 'sphinx.quickstart:main'},
-     'distutils.commands': {'build_sphinx': 'sphinx.setup_command:BuildDoc'}}
+    {'console_scripts': {'sphinx-build': 'sphinx:main', 'sphinx-quickstart': 'sphinx.quickstart:main',
+    'sphinx-autogen': 'sphinx.ext.autosummary.generate:main'},
+    'distutils.commands': {'build_sphinx': 'sphinx.setup_command:BuildDoc'}
+    }
+    >>> i.entry_points_map('console_scripts')
+    {'sphinx-build': 'sphinx:main', 'sphinx-quickstart': 'sphinx.quickstart:main',
+    'sphinx-autogen': 'sphinx.ext.autosummary.generate:main'}
     >>> i.file('requires.txt')
     ['Pygments>=0.8', 'Jinja2>=2.2', 'docutils>=0.5']
-    >>> i.file('depencency_links.txt')
+    >>> i.file('dependency_links.txt')
     Traceback (most recent call last):
       File "<pyshell#8>", line 1, in <module>
-        i.file('depencency_links.txt')
-      File "pkg.py", line 80, in file
+        i.file('dependency_links.txt')
+      File "/usr/local/lib/python2.7/dist-packages/pkgtools-0.3.1-py2.7.egg/pkgtools/pkg.py", line 140, in file
         raise KeyError('This package does not have {0} file'.format(name))
-    KeyError: This package does not have depencency_links.txt file
-    >>> i.file('PKG-INFO')['Metadata-Version']
+    KeyError: 'This package does not have dependency_links.txt file'
+    >>> i.pkg_info['Metadata-Version'] # Same as i.file('PKG-INFO')['Metadata-Version']
     '1.0'
-    >>> i.file('PKG-INFO')['Name']
+    >>> i.pkg_info['Name']
     'Sphinx'
+    >>> i.name
+    'Sphinx'
+    >>> i.as_req()
+    'Sphinx==1.0.7'
+    >>> i = Installed(__import__('sphinx'))
+    >>> i
+    <Installed[/usr/local/lib/python2.7/dist-packages/Sphinx-1.0.7.egg-info] object at 177199596>
+    >>> i.files()
+    ['requires.txt', 'PKG-INFO', 'SOURCES.txt', 'top_level.txt', 'entry_points.txt', 'zip-safe']
