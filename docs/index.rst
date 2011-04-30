@@ -37,6 +37,28 @@ Hello World!
     'pypol_-0.5-py2.6.egg'
     >>> pypol_egg.url
     'http://pypi.python.org/packages/2.6/p/pypol_/pypol_-0.5-py2.6.egg'
+    >>> pypi = PyPIJson('pyg')
+    >>> pypi.retrieve()['info']['author']
+    'Michele Lacchia'
+    >>> list(pypi.find())
+    [('0.4',
+      'pyg-0.4-py2.7.egg',
+      'f8c23fe4dbb64df4235bf14fe1646c92',
+      'http://pypi.python.org/packages/2.7/p/pyg/pyg-0.4-py2.7.egg'),
+     ('0.4',
+      'pyg-0.4.tar.gz',
+      '6860ac99bf45508acdf1c751d7ce2633',
+      'http://pypi.python.org/packages/source/p/pyg/pyg-0.4.tar.gz')]
+    >>> pypi = PyPIJson('pyg', '0.3.2')
+    >>> list(pypi.find())
+    [('0.3.2',
+      'pyg-0.3.2-py2.6.egg',
+      'd933b3ddc6913d5b149c7c751e836bfc',
+      'http://pypi.python.org/packages/2.6/p/pyg/pyg-0.3.2-py2.6.egg'),
+     ('0.3.2',
+      'pyg-0.3.2.tar.gz',
+      '9ce6efcf44548add6fa5540c529d33ee',
+      'http://pypi.python.org/packages/source/p/pyg/pyg-0.3.2.tar.gz')]
 
 ::
 

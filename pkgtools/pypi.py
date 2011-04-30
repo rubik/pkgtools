@@ -1,11 +1,10 @@
 import xmlrpclib
 import urllib2
+
 try:
     import simplejson as json
 except ImportError:
     import json
-
-from utils import _Objectify
 
 
 def pypi_client(index_url='http://pypi.python.org/pypi', *args, **kwargs):
@@ -200,11 +199,6 @@ class PyPIXmlRpc(object):
             >>> data = pypi.release_data('pkgtools', '0.2')
             >>> data.home_page
             'http://pkgtools.readthedocs.org/'
-            >>> data.licenze
-            Traceback (most recent call last):
-              File "<pyshell#56>", line 1, in <module>
-                data.licenze
-            AttributeError: '_Objectify' object has no attribute 'licenze'
             >>> data.license
             'MIT'
             >>> data.platform
@@ -254,6 +248,9 @@ class PyPIXmlRpc(object):
 
 
 class PyPIJson(object):
+    '''
+    Use Json to interoperate with PyPI.
+    '''
 
     URL = 'http://pypi.python.org/pypi/{0}{1}/json'
 

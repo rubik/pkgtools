@@ -69,6 +69,18 @@ class Dist(object):
 
         This attribute is True when the distribution has some metadata, False otherwise.
 
+    .. attribute:: pkg_info
+
+        Returns PKG-INFO's data. Equivalent to ``Dist.file('PKG-INFO')``.
+
+    .. attribute:: name
+
+        The package's name.
+
+    .. attribute:: version
+
+        The package's current version.
+
     .. automethod:: file
 
     .. automethod:: files
