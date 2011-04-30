@@ -169,13 +169,23 @@ class Egg(Dist):
     '''
     Given the egg path, returns a Dist object::
 
-        >>> e = Egg('pyg-0.1.2-py2.7.egg')
+        >>> e = Egg('pyg-0.4-py2.7.egg')
         >>> e
-        <Egg[pyg-0.1.2-py2.7.egg] object at 172517100>
+        <Egg[pyg-0.4-py2.7.egg] object at 157366028>
         >>> e.files()
-        ['requires.txt', 'PKG-INFO', 'SOURCES.txt', 'top_level.txt', 'dependency_links.txt', 'entry_points.txt']
+        ['top_level.txt', 'requires.txt', 'PKG-INFO', 'entry_points.txt', 'SOURCES.txt']
         >>> e.file('requires.txt')
-        ['setuptools']
+        ['setuptools', 'pkgtools>=0.3.1', 'argh>=0.14']
+        >>> e.pkg_info['Name']
+        'pyg'
+        >>> e.name
+        'pyg'
+        >>> e.version
+        '0.4'
+        >>> e.as_req()
+        'pyg==0.4'
+        >>> e.entry_points_map('console_scripts')
+        {'pyg': 'pyg:main'}
         >>> e.file('entry_points.txt')
         {'console_scripts': {'pyg': 'pyg:main'}}
     '''
@@ -190,15 +200,15 @@ class SDist(Dist):
     '''
     Given the source distribution path, returns a Dist object::
 
-        >>> s = SDist('pyg-0.1.2.zip')
+        >>> s = SDist('pyg-0.4.tar.gz')
         >>> s
-        <SDist[pyg-0.1.2.zip] object at 159709868>
+        <SDist[pyg-0.4.tar.gz] object at 157425036>
         >>> s.files()
-        ['requires.txt', 'PKG-INFO', 'SOURCES.txt', 'top_level.txt', 'dependency_links.txt', 'entry_points.txt']
-        >>> s.file('requires.txt')
-        ['setuptools', 'pkgtools']
-        >>> s.file('entry_points.txt')
-        {'console_scripts': {'pyg': 'pyg:main'}}
+        ['top_level.txt', 'requires.txt', 'PKG-INFO', 'entry_points.txt', 'SOURCES.txt']
+        >>> s.pkg_info['Metadata-Version']
+        '1.1'
+        >>> s.as_req()
+        'pyg==0.4'
     '''
 
     def __init__(self, sdist_path):
@@ -218,24 +228,20 @@ class Dir(Dist):
     '''
     Given a path containing the metadata files, returns a Dist object::
 
-        >>> p = Dir('/usr/local/lib/python2.7/dist-packages/pypol_-0.5-py2.7.egg/EGG-INFO')
-        >>> p
-        <Dir object at 150234636>
-        >>> p.files()
-        ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
-        >>> p.file('PKG-INFO')
-        {'Author': 'Michele Lacchia',
-         'Author-email': 'michelelacchia@gmail.com',
-         'Classifier': 'Programming Language :: Python :: 2.7',
-         'Description': 'UNKNOWN',
-         'Download-URL': 'http://github.com/rubik/pypol/downloads/',
-         'Home-page': 'http://pypol.altervista.org/',
-         'License': 'GNU GPL v3',
-         'Metadata-Version': '1.0',
-         'Name': 'pypol-',
-         'Platform': 'any',
-         'Summary': 'Python polynomial library',
-         'Version': '0.5'}
+        >>> d = Dir('/usr/local/lib/python2.7/dist-packages/pypol_-0.5.egg-info')
+        >>> d
+        <Dir[/usr/local/lib/python2.7/dist-packages/pypol_-0.5.egg-info] object at 157419436>
+        >>> d.as_req()
+        'pypol-==0.5'
+        >>> d.pkg_info
+        {'Name': 'pypol-', 'License': 'GNU GPL v3',
+        'Author': 'Michele Lacchia', 'Metadata-Version': '1.0',
+        'Home-page': 'http://pypol.altervista.org/',
+        'Summary': 'Python polynomial library', 'Platform': 'any',
+        'Version': '0.5', 'Download-URL': 'http://github.com/rubik/pypol/downloads/',
+        'Classifier': 'Programming Language :: Python :: 2.7',
+        'Author-email': 'michelelacchia@gmail.com', 'Description': 'UNKNOWN'
+        }
     '''
 
     def __init__(self, path):
@@ -249,6 +255,12 @@ class Dir(Dist):
 
 
 class EggDir(Dir):
+    '''
+    Given a directory path which contains an EGG-INFO dir, returns a Dist object::
+
+        TODO
+    '''
+
     def __init__(self, path):
         path = os.path.join(path, 'EGG-INFO')
         if not os.path.exists(path):
