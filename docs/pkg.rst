@@ -15,3 +15,5 @@
 .. autoclass:: Installed
 
 .. autoclass:: Dir
+
+.. autoclass:: EggDir

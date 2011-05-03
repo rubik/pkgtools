@@ -92,6 +92,7 @@ class Dist(object):
 
     ## Used by __repr__ method
     _arg_name = None
+    _zip_safe = True
 
     def __init__(self, file_objects):
         self.metadata = {}
@@ -101,6 +102,19 @@ class Dist(object):
     def __repr__(self):
         ## A little trick to get the real name from sub-classes (like Egg or SDist)
         return '<{0}[{1}] object at {2}>'.format(self.__class__.__name__, self._arg_name, id(self))
+
+    def _get_metadata(self):
+        for data, name in self.file_objects:
+            if name == 'not-zip-safe':
+                self._zip_safe = False
+            elif name.endswith('.txt') or name == 'PKG-INFO':
+                metadata = MetadataFileParser(data, name).parse()
+                if not metadata:
+                    continue
+                self.metadata[name] = metadata
+        ## FIXME: Do we really need _Objectify??
+        #self.metadata = _Objectify(self.metadata)
+        return self.metadata
 
     @ property
     def has_metadata(self):
@@ -118,18 +132,21 @@ class Dist(object):
     def version(self):
         return self.pkg_info['Version']
 
-    def _get_metadata(self):
-        for data, name in self.file_objects:
-            if name == 'not-zip-safe':
-                self.metadata['zip-safe'] = False
-            elif name.endswith('.txt') or name == 'PKG-INFO':
-                metadata = MetadataFileParser(data, name).parse()
-                if not metadata:
-                    continue
-                self.metadata[name] = metadata
-        ## FIXME: Do we really need _Objectify??
-        #self.metadata = _Objectify(self.metadata)
-        return self.metadata
+    @ property
+    def as_req(self):
+        '''
+        Returns a string that represents the parsed requirement.
+        '''
+
+        return '{0}=={1}'.format(self.name, self.version)
+
+    @ property
+    def zip_safe(self):
+        '''
+        Returns False whether the package has a :file:`not-zip-safe` file, True otherwise.
+        '''
+
+        return self._zip_safe
 
     def file(self, name):
         '''
@@ -156,13 +173,6 @@ class Dist(object):
             return self.file('entry_points.txt')[group]
         except KeyError:
             return {}
-
-    def as_req(self):
-        '''
-        Returns a string that represents the parsed requirement.
-        '''
-
-        return '{0}=={1}'.format(self.name, self.version)
 
 
 class Egg(Dist):
@@ -258,7 +268,24 @@ class EggDir(Dir):
     '''
     Given a directory path which contains an EGG-INFO dir, returns a Dist object::
 
-        TODO
+        >>> ed = EggDir('/usr/local/lib/python2.7/dist-packages/pkgtools-0.3.1-py2.7.egg')
+        >>> ed
+        <EggDir[/usr/local/lib/python2.7/dist-packages/pkgtools-0.3.1-py2.7.egg/EGG-INFO] object at 145505740>
+        >>> ed.files()
+        ['top_level.txt', 'PKG-INFO', 'zip-safe', 'SOURCES.txt']
+        >>> ed.pkg_info['Summary']
+        'Python Packages Tools'
+        >>> ed.as_req()
+        'pkgtools==0.3.1'
+        >>> ed.file('entry_points.txt')
+        Traceback (most recent call last):
+          File "<pyshell#7>", line 1, in <module>
+            ed.file('entry_points.txt')
+          File "/usr/local/lib/python2.7/dist-packages/pkgtools-0.3.1-py2.7.egg/pkgtools/pkg.py", line 140, in file
+            raise KeyError('This package does not have {0} file'.format(name))
+        KeyError: 'This package does not have entry_points.txt file'
+        >>> ed.zip_safe
+        False
     '''
 
     def __init__(self, path):
