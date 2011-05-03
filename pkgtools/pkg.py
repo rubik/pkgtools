@@ -192,7 +192,7 @@ class Egg(Dist):
         'pyg'
         >>> e.version
         '0.4'
-        >>> e.as_req()
+        >>> e.as_req
         'pyg==0.4'
         >>> e.entry_points_map('console_scripts')
         {'pyg': 'pyg:main'}
@@ -272,7 +272,7 @@ class EggDir(Dir):
         >>> ed
         <EggDir[/usr/local/lib/python2.7/dist-packages/pkgtools-0.3.1-py2.7.egg/EGG-INFO] object at 145505740>
         >>> ed.files()
-        ['top_level.txt', 'PKG-INFO', 'zip-safe', 'SOURCES.txt']
+        ['top_level.txt', 'PKG-INFO', 'SOURCES.txt']
         >>> ed.pkg_info['Summary']
         'Python Packages Tools'
         >>> ed.as_req()
