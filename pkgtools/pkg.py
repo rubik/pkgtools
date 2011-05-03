@@ -256,6 +256,8 @@ class Dir(Dist):
 
     def __init__(self, path):
         files = []
+        if not os.path.exists(os.path.join(path, 'PKG-INFO')):
+            raise ValueError('This directory does not contain metadata files')
         for f in os.listdir(path):
             with open(os.path.join(path, f)) as fobj:
                 data = fobj.read()
