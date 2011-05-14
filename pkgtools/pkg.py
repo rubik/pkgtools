@@ -4,12 +4,17 @@ import glob
 import pkgutil
 import tarfile
 import zipfile
-import warnings
-import StringIO
-import ConfigParser
-from email.parser import FeedParser
+import warning
 
-from utils import ext, tar_files, zip_files
+if sys.version_info >= (3,):
+    import io as StringIO
+    import configparser as ConfigParser
+else:
+    import StringIO
+    import ConfigParser
+
+from email.parser import FeedParser
+from .utils import ext, tar_files, zip_files
 
 
 class MetadataFileParser(object):
@@ -33,14 +38,14 @@ class MetadataFileParser(object):
     def parse(self):
         try:
             return self.MAP[self.name]()
-        except KeyError:
+        except (KeyError, ConfigParser.MissingSectionHeaderError):
             return {}
 
     def pkg_info(self):
         d = {}
         f = FeedParser()
         f.feed(self.data)
-        d.update(f.close().items())
+        d.update(list(f.close().items()))
         return d
 
     def list(self):
@@ -162,7 +167,7 @@ class Dist(object):
         Returns the files parsed by this distribution.
         '''
 
-        return self.metadata.keys()
+        return list(self.metadata.keys())
 
     def entry_points_map(self, group):
         '''
@@ -426,13 +431,10 @@ class WorkingSet(object):
         return item in self.packages
 
     def __iter__(self):
-        for package, data in self.packages.iteritems():
+        for package, data in list(self.packages.items()):
             yield package, data
 
     def __bool__(self):
-        return bool(self.packages)
-
-    def __nonzero__(self):
         return bool(self.packages)
 
     def __len__(self):

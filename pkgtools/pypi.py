@@ -1,5 +1,11 @@
-import xmlrpclib
-import urllib2
+import sys
+
+if sys.version_info >= (3,):
+    import xmlrpc.client as xmlrpclib
+    import urllib.request as urllib2
+else:
+    import xmlrpclib
+    import urllib2
 
 try:
     import simplejson as json
@@ -61,10 +67,6 @@ def real_name(package_name, timeout=None):
 
     r = urllib2.Request('http://pypi.python.org/simple/{0}'.format(package_name))
     return urllib2.urlopen(r, timeout=timeout).geturl().split('/')[-2]
-
-def _request(url, timeout=None):
-    r = urllib2.Request(url)
-    return urllib2.urlopen(r, timeout=timeout)
 
 
 class PyPIXmlRpc(object):
@@ -272,10 +274,15 @@ class PyPIJson(object):
     def __repr__(self):
         return '<PyPIJson[{0}] object at {1}>'.format(self.package_name, id(self))
 
-    def retrieve(self, package_name=None):
-        pkg_name = package_name or self.package_name
-        data = _request(self.URL.format(pkg_name, self.version))
-        return json.loads(data.read())
+    def retrieve(self, req_func=None, timeout=None):
+        def _request(url, timeout=None):
+            r = urllib2.Request(url)
+            return urllib2.urlopen(r, timeout=timeout).read()
+        if req_func is None:
+            req_func = _request
+        url = self.URL.format(self.package_name, self.version)
+        data = req_func(url, timeout)
+        return json.loads(data)
 
     def find(self):
         data = self.retrieve()
