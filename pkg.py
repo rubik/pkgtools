@@ -4,7 +4,7 @@ import glob
 import pkgutil
 import tarfile
 import zipfile
-import warnings
+import warning
 
 if sys.version_info >= (3,):
     import io as StringIO
