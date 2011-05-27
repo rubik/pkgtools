@@ -1,0 +1,24 @@
+0.6 (May 26, 2011)
+==================
+
++ Added :func:`pkgtools.pkg.get_metadata`.
+
+0.5
+===
+
++ Added :class:`pkgtools.pkg.WorkingSet`.
+
+0.4
+===
+
++ Added :class:`pkgtools.pkg.EggDir`.
+
+0.3
+===
+
++ Added :class:`pkgtools.pkg.PyPIJson`.
+
+0.1
+===
+
++ First release.

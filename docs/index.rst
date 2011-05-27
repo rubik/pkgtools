@@ -11,6 +11,7 @@ pkgtools is a Python library that offers some tools to work with Python Packages
     * :mod:`pkgtools.pypi`: a simple yet powerful interface to `PyPI <http://pypi.python.org/pypi>`_ (Python Package Index)
     * :mod:`pkgtools.pkg`: some package utilities, like metadata reading
 
+:ref:`news.rst`
 
 Hello World!
 ------------

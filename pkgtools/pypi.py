@@ -265,7 +265,7 @@ class PyPIJson(object):
         if not fast:
             self.package_name = real_name(package_name)
 
-        ## Not the simplest way in the world, but it works
+        ## Not the simplest way, but it works
         if version is None:
             self.version = ''
         else:
@@ -282,7 +282,9 @@ class PyPIJson(object):
             req_func = _request
         url = self.URL.format(self.package_name, self.version)
         data = req_func(url, timeout)
-        return json.loads(data)
+        json_data = json.loads(data)
+        self.version = json_data['info']['version']
+        return json_data
 
     def find(self):
         data = self.retrieve()

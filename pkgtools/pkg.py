@@ -264,6 +264,8 @@ class Dir(Dist):
         if not os.path.exists(os.path.join(path, 'PKG-INFO')):
             raise ValueError('This directory does not contain metadata files')
         for f in os.listdir(path):
+            if not os.path.isfile(os.path.join(path, f)):
+                continue
             with open(os.path.join(path, f)) as fobj:
                 data = fobj.read()
             files.append((data, f))
@@ -439,3 +441,31 @@ class WorkingSet(object):
 
     def __len__(self):
         return len(self.packages)
+
+
+def get_metadata(pkg):
+    import types
+
+    if type(pkg) is types.ModuleType:
+        return Installed(pkg)
+    if isinstance(pkg, str):
+        try:
+            m = __import__(pkg)
+        except ImportError:
+            pass
+        else:
+            try:
+                return Installed(pkg)
+            except ValueError:
+                return Develop(pkg)
+        if os.path.exists(pkg):
+            e = ext(pkg)
+            if os.path.isdir(pkg):
+                if e == '.egg':
+                    return EggDir(pkg)
+                return Dir(pkg)
+            if e in ('.tar', '.tar.gz', '.tar.bz2', '.zip'):
+                return SDist(pkg)
+            elif e == '.egg':
+                return Egg(pkg)
+    raise TypeError('Cannot return a Dist object')
