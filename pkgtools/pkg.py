@@ -98,6 +98,7 @@ class Dist(object):
     ## Used by __repr__ method
     _arg_name = None
     _zip_safe = True
+    _name = _version = None
 
     def __init__(self, file_objects):
         self.metadata = {}
@@ -117,8 +118,6 @@ class Dist(object):
                 if not metadata:
                     continue
                 self.metadata[name] = metadata
-        ## FIXME: Do we really need _Objectify??
-        #self.metadata = _Objectify(self.metadata)
         return self.metadata
 
     @ property
@@ -131,11 +130,21 @@ class Dist(object):
 
     @ property
     def name(self):
-        return self.pkg_info['Name']
+        try:
+            return self.pkg_info['Name']
+        except KeyError:
+            if self._name is None:
+                raise
+            return self._name
 
     @ property
     def version(self):
-        return self.pkg_info['Version']
+        try:
+            return self.pkg_info['Version']
+        except KeyError:
+            if self._version is None:
+                raise
+            return self._version
 
     @ property
     def as_req(self):
