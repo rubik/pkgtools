@@ -6,12 +6,13 @@ Scenario Outline: Test SDist object
     Then I see <result>
 
     Examples:
-        | attr         | result                 |
-        | name         | itertools-recipes      |
-        | version      | 0.1                    |
-        | as_req       | itertools-recipes==0.1 |
-        | has_metadata | True                   |
-        | zip_safe     | True                   |
+        | attr         | result                            |
+        | name         | itertools-recipes                 |
+        | version      | 0.1                               |
+        | as_req       | itertools-recipes==0.1            |
+        | has_metadata | True                              |
+        | zip_safe     | True                              |
+        | location     | dist/itertools_recipes-0.1.tar.gz |
 
 
 Scenario Outline: Test Egg object
@@ -20,9 +21,10 @@ Scenario Outline: Test Egg object
     Then I see <result>
 
     Examples:
-        | attr         | result          |
-        | name         | pkgtools        |
-        | version      | 0.6.2           |
-        | as_req       | pkgtools==0.6.2 |
-        | has_metadata | True            |
-        | zip_safe     | False           |
+        | attr         | result                        |
+        | name         | pkgtools                      |
+        | version      | 0.6.2                         |
+        | as_req       | pkgtools==0.6.2               |
+        | has_metadata | True                          |
+        | zip_safe     | False                         |
+        | location     | dist/pkgtools-0.6.2-py2.7.egg |

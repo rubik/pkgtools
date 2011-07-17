@@ -275,7 +275,7 @@ class Dir(Dist):
             with open(os.path.join(path, f)) as fobj:
                 data = fobj.read()
             files.append((data, f))
-        self._arg_name = os.path.normpath(path)
+        self.location = os.path.normpath(path)
         super(Dir, self).__init__(files)
 
 
@@ -352,8 +352,7 @@ class Develop(Dir):
                 path = p
                 break
         else:
-            raise ValueError('cannot find metadata for {0}'.format(package_name))
-        self._arg_name = package_name
+            raise ValueError('Cannot find metadata for {0}'.format(package_name))
         super(Develop, self).__init__(path)
 
 

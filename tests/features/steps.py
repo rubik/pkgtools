@@ -8,7 +8,7 @@ except ImportError:
     import pkgtools.pkg as pkg
 
 
-DISTS = os.getenv('PKGTOOLS_DISTS', None) or os.path.abspath('dist')
+DISTS = os.path.abspath('dist')
 ENV = {}
 
 @step(r'I set (?P<var>[\w][\w\d]*) to "(?P<arg>.*?)" as (?P<obj>\w+)$')
