@@ -64,8 +64,8 @@ Hello World!
 setup(
     name='pkgtools',
     version=pkgtools.__version__,
-    author='Michele Lacchia & Alex Marcat',
-    author_email='<michelelacchia@gmail.com',
+    author='Michele Lacchia',
+    author_email='<michelelacchia@gmail.com>',
     license='MIT',
     url='http://pkgtools.readthedocs.org/',
     download_url='http://pypi.python.org/pypi/pkgtools',

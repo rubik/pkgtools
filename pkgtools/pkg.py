@@ -213,7 +213,7 @@ class Egg(Dist):
 
     def __init__(self, egg_path):
         z = zipfile.ZipFile(egg_path)
-        self._arg_name = os.path.normpath(egg_path)
+        self.location = self._arg_name = os.path.abspath(egg_path)
         super(Egg, self).__init__(zip_files(z, 'EGG-INFO'))
 
 
@@ -241,7 +241,7 @@ class SDist(Dist):
             mode = 'r' if e == '.tar' else 'r:' + e.split('.')[2]
             arch = tarfile.open(sdist_path, mode=mode)
             func = tar_files
-        self._arg_name = os.path.normpath(sdist_path)
+        self.location = self._arg_name = os.path.abspath(sdist_path)
         super(SDist, self).__init__(func(arch))
 
 
@@ -275,7 +275,8 @@ class Dir(Dist):
             with open(os.path.join(path, f)) as fobj:
                 data = fobj.read()
             files.append((data, f))
-        self.location = os.path.normpath(path)
+        self._arg_name = os.path.normpath(path)
+        self.location = os.path.abspath(path)
         super(Dir, self).__init__(files)
 
 
@@ -402,7 +403,6 @@ class Installed(Dir):
                 break
         else:
             raise ValueError('cannot find PKG-INFO for {0}'.format(package_name))
-        self._arg_name = package_name
         super(Installed, self).__init__(path)
 
 

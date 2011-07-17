@@ -1,3 +1,14 @@
+0.7 (in development)
+====================
+
++ Started writing tests (lettuce).
++ Added new attribute :attr:`location` to :class:`pkgtools.pkg.Dist`.
+
+0.6.2 (July 8, 2011)
+====================
+
++ Added special attributes ``_name`` and ``_version`` to :class:`pkgtools.pkg.Dist`.
+
 0.6 (May 26, 2011)
 ==================
 

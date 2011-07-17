@@ -23,5 +23,7 @@ def i_get_attr(step, var, attr):
 
 @step(r'I see (.*)$')
 def i_see(step, result):
+    if result.startswith('*'):
+        result = os.path.abspath(result[1:])
     if str(world.res) != result:
         raise AssertionError('Wrong result. Expected %s, got %s' % (world.res, result))
