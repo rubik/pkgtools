@@ -1,4 +1,5 @@
 import sys
+from utils import ext
 
 if sys.version_info >= (3,):
     import xmlrpc.client as xmlrpclib
@@ -290,4 +291,5 @@ class PyPIJson(object):
         data = self.retrieve()
         version = data['info']['version']
         for release in data['urls']:
-            yield version, release['filename'], release['md5_digest'], release['url']
+            yield version, release['filename'], release['md5_digest'], \
+                release['url'], ext(release['filename'])

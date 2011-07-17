@@ -68,15 +68,7 @@ class MetadataFileParser(object):
 
 class Dist(object):
     '''
-    This is the base class for all other objects. It requires a list of tuples (``(file_data, file_name)``) and provides some methods:
-
-    .. attribute:: has_metadata
-
-        This attribute is True when the distribution has some metadata, False otherwise.
-
-    .. attribute:: pkg_info
-
-        Returns PKG-INFO's data. Equivalent to ``Dist.file('PKG-INFO')``.
+    This is the base class for all other objects. It requires a list of tuples (``(file_data, file_name)``) and provides some attributes/methods:
 
     .. attribute:: name
 
@@ -86,13 +78,29 @@ class Dist(object):
 
         The package's current version.
 
+    .. attribute:: as_req
+
+        The string that represents the parsed requirement.
+
+    .. attribute:: files
+
+        All the files parsed by this distribution.
+
+    .. attribute:: has_metadata
+
+        This attribute is True when the distribution has some metadata, False otherwise.
+
+    .. attribute:: pkg_info
+
+        Returns PKG-INFO's data. Equivalent to ``Dist.file('PKG-INFO')``.
+
+    .. attribute:: zip_safe
+
+        False whether the package has a :file:`not-zip-safe` file, True otherwise.
+
     .. automethod:: file
 
-    .. automethod:: files
-
     .. automethod:: entry_points_map
-
-    .. automethod:: as_req
     '''
 
     ## Used by __repr__ method
@@ -120,15 +128,15 @@ class Dist(object):
                 self.metadata[name] = metadata
         return self.metadata
 
-    @ property
+    @property
     def has_metadata(self):
         return bool(self.metadata)
 
-    @ property
+    @property
     def pkg_info(self):
         return self.file('PKG-INFO')
 
-    @ property
+    @property
     def name(self):
         try:
             return self.pkg_info['Name']
@@ -137,7 +145,7 @@ class Dist(object):
                 raise
             return self._name
 
-    @ property
+    @property
     def version(self):
         try:
             return self.pkg_info['Version']
@@ -146,21 +154,17 @@ class Dist(object):
                 raise
             return self._version
 
-    @ property
+    @property
     def as_req(self):
-        '''
-        Returns a string that represents the parsed requirement.
-        '''
-
         return '{0}=={1}'.format(self.name, self.version)
 
-    @ property
+    @property
     def zip_safe(self):
-        '''
-        Returns False whether the package has a :file:`not-zip-safe` file, True otherwise.
-        '''
-
         return self._zip_safe
+
+    @property
+    def files(self):
+        return list(self.metadata.keys())
 
     def file(self, name):
         '''
@@ -170,13 +174,6 @@ class Dist(object):
         if name not in self.metadata:
             raise KeyError('This package does not have {0} file'.format(name))
         return self.metadata[name]
-
-    def files(self):
-        '''
-        Returns the files parsed by this distribution.
-        '''
-
-        return list(self.metadata.keys())
 
     def entry_points_map(self, group):
         '''
