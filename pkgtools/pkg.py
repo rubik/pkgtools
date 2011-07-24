@@ -403,7 +403,28 @@ class Installed(Dir):
                 break
         else:
             raise ValueError('cannot find PKG-INFO for {0}'.format(package_name))
+        self.package_name = package_name
         super(Installed, self).__init__(path)
+
+    def installed_files(self):
+        loc = {
+            'lib': set([self.location]),
+            'bin': set(),
+            #'data': set(),
+        }
+        patterns = (
+            self.package_name,
+            '%s.{py,pyc,pyo,so}' % (self.package_name)
+        )
+        base = os.path.dirname(self.location)
+        for pattern in patterns:
+            loc['lib'].update(glob.iglob(os.path.join(base, pattern)))
+        try:
+            for group in ('console_scripts', 'gui_scripts'):
+                loc['bin'].update(self.entry_points_map(group).keys())
+        except KeyError:
+            pass
+        return loc
 
 
 class WorkingSet(object):
