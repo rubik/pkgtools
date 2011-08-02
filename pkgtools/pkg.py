@@ -412,10 +412,12 @@ class Installed(Dir):
             'bin': set(),
             #'data': set(),
         }
-        patterns = (
+        patterns = [
             self.package_name,
-            '%s.{py,pyc,pyo,so}' % (self.package_name)
-        )
+        ]
+        for e in ('py', 'pyc', 'pyo', 'so'):
+            patterns.append('%s*%s' % (self.package_name, e))
+
         base = os.path.dirname(self.location)
         for pattern in patterns:
             loc['lib'].update(glob.iglob(os.path.join(base, pattern)))
