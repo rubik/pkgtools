@@ -1,3 +1,8 @@
+0.7.1 (August 4, 2011)
+======================
+
++ #2: Now pkgtools supports extras. (See :attr:`pkgtools.pkg.Dist.requires`.)
+
 0.7 (July 24, 2011)
 ===================
 

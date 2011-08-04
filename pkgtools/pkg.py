@@ -53,7 +53,6 @@ class MetadataFileParser(object):
         d = []
         for line in self.data.splitlines():
             line = line.strip()
-            print line
             if not line or (not add_sections and (line.startswith('[') and line.endswith(']'))):
                 continue
             d.append(line)
@@ -78,6 +77,7 @@ class MetadataFileParser(object):
                 reqs['extras'][cursect].add(r)
             else:
                 reqs['install'].add(r)
+        reqs['extras'] = dict(reqs['extras'])
         return reqs
 
     def config(self):
@@ -104,6 +104,18 @@ class Dist(object):
     .. attribute:: as_req
 
         The string that represents the parsed requirement.
+
+    .. attribute:: requires
+
+        .. versionadded: 0.7.1
+
+        This distribution's requirements (including extras).
+
+    .. attribute:: location
+
+        .. versionadded: 0.7
+
+        The distribution's metadata location.
 
     .. attribute:: files
 
@@ -180,6 +192,10 @@ class Dist(object):
     @property
     def as_req(self):
         return '{0}=={1}'.format(self.name, self.version)
+
+    @property
+    def requires(self):
+        return self.file('requires.txt')
 
     @property
     def zip_safe(self):
@@ -430,10 +446,30 @@ class Installed(Dir):
         super(Installed, self).__init__(path)
 
     def installed_files(self):
+        '''
+        .. versionadded:: 0.7
+
+        Returns the installed files of this distribution.
+        It returns a dictionary, with these keys:
+
+            * lib: files placed into the :file:`site/dist-packages` directory.
+            * bin: Python executable file names
+
+        Example::
+
+            >>> i = Installed('pyg')
+            >>> files = i.installed_files()
+            >>> files['lib']
+            set(['/usr/local/lib/python2.7/site-packages/pyg-0.7.1-py2.7.egg/pyg',
+                 '/usr/local/lib/python2.7/site-packages/pyg-0.7-1-py2.7.egg/EGG-INFO'])
+            >>> files['bin']
+            set(['pyg2.7', 'pyg'])
+        '''
+
         loc = {
             'lib': set([self.location]),
             'bin': set(),
-            'binpath': set(),
+            #'binpath': set(), too dangerous
             #'data': set(),
         }
         patterns = [
@@ -450,13 +486,14 @@ class Installed(Dir):
                 loc['bin'].update(self.entry_points_map(group).keys())
             except KeyError:
                 continue
-        path = os.getenv('PATH', '').split(':')
-        if path:
-            for executable in loc['bin']:
-                for p in path:
-                    fullpath = os.path.join(p, executable)
-                    if os.path.exists(fullpath):
-                        loc['binpath'].add(fullpath)
+        # removed for now; too dangerous
+        #path = os.getenv('PATH', '').split(':')
+        #if path:
+        #    for executable in loc['bin']:
+        #        for p in path:
+        #            fullpath = os.path.join(p, executable)
+        #            if os.path.exists(fullpath):
+        #                loc['binpath'].add(fullpath)
         return loc
 
 
