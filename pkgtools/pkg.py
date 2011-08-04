@@ -413,6 +413,8 @@ class Installed(Dir):
         <Installed[/usr/local/lib/python2.7/dist-packages/argh-0.14.0-py2.7.egg-info] object at 175527500>
         >>> i.files()
         ['top_level.txt', 'dependency_links.txt', 'PKG-INFO', 'SOURCES.txt']
+
+    .. automethod:: installed_files
     '''
 
     def __init__(self, package):
