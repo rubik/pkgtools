@@ -5,6 +5,7 @@ import pkgutil
 import tarfile
 import zipfile
 import warnings
+import collections
 
 if sys.version_info >= (3,):
     import io as StringIO
@@ -25,7 +26,7 @@ class MetadataFileParser(object):
             'PKG-INFO': self.pkg_info,
             'SOURCES.txt': self.list,
             'top_level.txt': self.list,
-            'requires.txt': self.list,
+            'requires.txt': self.req,
             'dependency_links.txt': self.list,
             'installed-files.txt': self.list,
             'entry_points.txt': self.config,
@@ -48,14 +49,36 @@ class MetadataFileParser(object):
         d.update(list(f.close().items()))
         return d
 
-    def list(self):
+    def list(self, add_sections=False):
         d = []
-        for line in self.data.split('\n'):
+        for line in self.data.splitlines():
             line = line.strip()
-            if not line or (line.startswith('[') and line.endswith(']')):
+            print line
+            if not line or (not add_sections and (line.startswith('[') and line.endswith(']'))):
                 continue
             d.append(line)
         return d
+
+    def req(self):
+        def is_section(s):
+            return (s[0], s[-1]) == ('[', ']') and s[1:-1]
+
+        reqs = {
+            'install': set(),
+            'extras': collections.defaultdict(set)
+        }
+
+        cursect = None
+        for r in self.list(True):
+            s = is_section(r)
+            if s:
+                reqs['extras'][s] = set()
+                cursect = s
+            elif cursect:
+                reqs['extras'][cursect].add(r)
+            else:
+                reqs['install'].add(r)
+        return reqs
 
     def config(self):
         d = {}
@@ -123,8 +146,8 @@ class Dist(object):
                 self._zip_safe = False
             elif name.endswith('.txt') or name == 'PKG-INFO':
                 metadata = MetadataFileParser(data, name).parse()
-                if not metadata:
-                    continue
+                #if not metadata:
+                #    continue
                 self.metadata[name] = metadata
         return self.metadata
 
@@ -410,22 +433,30 @@ class Installed(Dir):
         loc = {
             'lib': set([self.location]),
             'bin': set(),
+            'binpath': set(),
             #'data': set(),
         }
         patterns = [
             self.package_name,
         ]
-        for e in ('py', 'pyc', 'pyo', 'so'):
-            patterns.append('%s*%s' % (self.package_name, e))
+        for e in ('py', 'pyc', 'pyo', 'so', 'egg'):
+            patterns.append('%s*.%s' % (self.package_name, e))
 
         base = os.path.dirname(self.location)
         for pattern in patterns:
             loc['lib'].update(glob.iglob(os.path.join(base, pattern)))
-        try:
-            for group in ('console_scripts', 'gui_scripts'):
+        for group in ('console_scripts', 'gui_scripts'):
+            try:
                 loc['bin'].update(self.entry_points_map(group).keys())
-        except KeyError:
-            pass
+            except KeyError:
+                continue
+        path = os.getenv('PATH', '').split(':')
+        if path:
+            for executable in loc['bin']:
+                for p in path:
+                    fullpath = os.path.join(p, executable)
+                    if os.path.exists(fullpath):
+                        loc['binpath'].add(fullpath)
         return loc
 
 
