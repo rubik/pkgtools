@@ -1,5 +1,5 @@
 import sys
-from utils import ext
+from .utils import ext
 
 if sys.version_info >= (3,):
     import xmlrpc.client as xmlrpclib
