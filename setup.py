@@ -62,14 +62,14 @@ Hello World!
 '''
 
 setup(
-    name='pkgtools',
+    name='pkgtools3',
     version=pkgtools.__version__,
     author='Michele Lacchia',
     author_email='<michelelacchia@gmail.com>',
     license='MIT',
     url='http://pkgtools.readthedocs.org/',
     download_url='http://pypi.python.org/pypi/pkgtools',
-    description='Python Packages Tools',
+    description='Python Packages Tools, with Python 3.3 support',
     long_description=long_desc,
     platforms='any',
     packages=['pkgtools'],
