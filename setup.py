@@ -62,7 +62,7 @@ Hello World!
 '''
 
 setup(
-    name='pkgtools3',
+    name='pkgtools',
     version=pkgtools.__version__,
     author='Michele Lacchia',
     author_email='<michelelacchia@gmail.com>',
