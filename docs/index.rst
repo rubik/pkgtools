@@ -18,8 +18,8 @@ Hello World!
 
 ::
 
-    >>> from pkgtools.pypi import PyPI
-    >>> pypi = PyPI()
+    >>> from pkgtools.pypi import PyPIXmlRpc, PyPIJson
+    >>> pypi = PyPIXmlRpc()
     >>> pypi.package_releases('pypol_')
     ['0.5']
     >>> pypi.package_releases('pypol_', True)
