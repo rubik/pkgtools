@@ -255,9 +255,9 @@ class PyPIJson(object):
     Use Json to interoperate with PyPI.
     '''
 
-    URL = 'http://pypi.python.org/pypi/{0}{1}/json'
+    URL = 'http://pypi.python.org/pypi/{0}/json'
 
-    def __init__(self, package_name, version=None, fast=False):
+    def __init__(self, package_name, fast=False):
         self.package_name = package_name
 
         # If we don't want to be really fast, we can check if the package name
@@ -266,29 +266,29 @@ class PyPIJson(object):
         if not fast:
             self.package_name = real_name(package_name)
 
-        ## Not the simplest way, but it works
-        if version is None:
-            self.version = ''
-        else:
-            self.version = '/{0}'.format(version)
-
     def __repr__(self):
         return '<PyPIJson[{0}] object at {1}>'.format(self.package_name, id(self))
 
-    def retrieve(self, req_func=None, timeout=None):
+    def retrieve(self, version=None, req_func=None, timeout=None):
+        '''
+        Retrieve the raw data from PyPI and loads the JSON into a Python
+        dictionary.
+        '''
         def _request(url, timeout=None):
-            r = urllib2.Request(url)
-            return urllib2.urlopen(r, timeout=timeout).read()
+            return urllib2.urlopen(url, timeout=timeout).read()
         if req_func is None:
             req_func = _request
-        url = self.URL.format(self.package_name, self.version)
-        data = req_func(url, timeout)
+        url = self.URL.format(self.package_name + ('/{0}'.format(version)
+                                                   if version else ''))
+        data = req_func(url, timeout).decode('utf-8')
         json_data = json.loads(data)
-        self.version = json_data['info']['version']
         return json_data
 
-    def find(self):
-        data = self.retrieve()
+    def find(self, version=None):
+        '''
+        Find the distribution's files for the release specified by `version`.
+        '''
+        data = self.retrieve(version=version)
         version = data['info']['version']
         for release in data['urls']:
             yield version, release['filename'], release['md5_digest'], \
